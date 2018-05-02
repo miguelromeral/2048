@@ -24,7 +24,7 @@ class Juego(int):
     TABLEROS = (3, 4, 5, 6, 7, 8)
     
     # Probabilidad de que aparezca un 4 en lugar de un 2.
-    PR_CUATRO = 0.1
+    PR_CUATRO = 0.05
     
     # Tamaño de una casilla
     W_CELL = 10
@@ -131,6 +131,33 @@ class Juego(int):
             return self.VALORES[valor1 + 1]
         return 0
     
+    def llevar_casilla_derecha(self, x, y):
+        aux = y + 1 
+        if aux < self.longitud:
+            if self.vacia(x, aux):
+                self.intercambiar(x, y, x, aux)
+                self.llevar_casilla_derecha(x, aux)
+    
+    
+    def desplazamientos_derecha(self):
+        for x in range(0, self.longitud):  
+            alreves = range(0, self.longitud - 1)
+            for nueva in reversed(alreves): 
+                self.llevar_casilla_derecha(x, nueva) 
+    
+    
+    def movimiento_derecha(self, sumar):
+        self.desplazamientos_derecha()
+        puntos = 0
+        for x in range(0, self.longitud):
+            alreves = range(1, self.longitud)
+            for nueva in reversed(alreves):
+                puntos += self.unir_dos_casillas(x, nueva, x, nueva - 1) 
+        self.desplazamientos_derecha()
+        if sumar:
+            self.puntuacion += puntos
+        return puntos
+    
     
     def llevar_casilla_izquierda(self, x, y):
         '''
@@ -145,7 +172,6 @@ class Juego(int):
                 self.intercambiar(x, y, x, aux)
                 self.llevar_casilla_izquierda(x, aux)
     
-    
     def desplazamientos_izquierda(self):
         '''
         Lleva las casillas necesarias a la izquierda
@@ -156,12 +182,10 @@ class Juego(int):
                 # 1, porque la 0 no hace falta comprobarla.
                 self.llevar_casilla_izquierda(x, nueva) # Movemos todas las demas casillas
     
-    
     def movimiento_izquierda(self, sumar):
         '''
         Realiza el movimiento del tablero a la izquierda. Se indica si se deben sumar los puntos o no.
         '''
-        self.anterior = list(self.tablero)
         self.desplazamientos_izquierda()
         # Unimos las que esten juntas:
         puntos = 0
@@ -169,6 +193,62 @@ class Juego(int):
             for nueva in range(0, self.longitud - 1):       # Para cada columna (desde la 0 hasta n-2)
                 puntos += self.unir_dos_casillas(x, nueva, x, nueva + 1) 
         self.desplazamientos_izquierda()
+        if sumar:
+            self.puntuacion += puntos
+        return puntos
+    
+    
+    
+    def llevar_casilla_arriba(self, x, y):
+        aux = x - 1
+        if aux >= 0:                # Siempre que no nos salgamos por la izquierda
+            if self.vacia(aux, y):
+                self.intercambiar(x, y, aux, y)
+                self.llevar_casilla_arriba(aux, y)
+    
+    def desplazamientos_arriba(self):
+        for y in range(0, self.longitud):               
+            for nueva in range(1, self.longitud):       
+                self.llevar_casilla_arriba(nueva, y)
+    
+    def movimiento_arriba(self, sumar):
+        self.desplazamientos_arriba()
+        puntos = 0
+        for y in range(0, self.longitud):               # Para cada fila:
+            for nueva in range(0, self.longitud - 1):       # Para cada columna (desde la 0 hasta n-2)
+                puntos += self.unir_dos_casillas(nueva, y, nueva + 1, y) 
+        self.desplazamientos_arriba()
+        if sumar:
+            self.puntuacion += puntos
+        return puntos
+    
+    
+    
+    
+    def llevar_casilla_abajo(self, x, y):
+        aux = x + 1
+        if aux < self.longitud:                # Siempre que no nos salgamos por la izquierda
+            if self.vacia(aux, y):
+                self.intercambiar(x, y, aux, y)
+                self.llevar_casilla_abajo(aux, y)
+    
+    
+    def desplazamientos_abajo(self):
+        for y in range(0, self.longitud):    
+            alreves = range(0, self.longitud - 1)
+            for nueva in reversed(alreves):     
+                self.llevar_casilla_abajo(nueva, y)
+    
+    
+    
+    def movimiento_abajo(self, sumar):
+        self.desplazamientos_abajo()
+        puntos = 0
+        for y in range(0, self.longitud):   
+            alreves = range(1, self.longitud)
+            for nueva in reversed(alreves):
+                puntos += self.unir_dos_casillas(nueva, y, nueva - 1, y) 
+        self.desplazamientos_abajo()
         if sumar:
             self.puntuacion += puntos
         return puntos
@@ -218,13 +298,13 @@ class Juego(int):
         diferentes = False
         anterior = self.exportar_tablero()
         if mov == 'w':
-            diferentes = True
+            self.movimiento_arriba(False)
         elif mov == 'a':
             self.movimiento_izquierda(False)
         elif mov == 's':
-            diferentes = True
+            self.movimiento_abajo(False)
         elif mov == 'd':
-            diferentes = True
+            self.movimiento_derecha(False)
         diferentes = self.tableros_diferentes(anterior)
         self.importar_tablero(anterior)
         return diferentes
@@ -237,13 +317,13 @@ class Juego(int):
     def mover(self, mov):
         if self.movimiento_posible(mov):
             if mov == 'w':
-                pass
+                self.movimiento_arriba(True)
             elif mov == 'a':
                 self.movimiento_izquierda(True)
             elif mov == 's':
-                pass
+                self.movimiento_abajo(True)
             elif mov == 'd':
-                pass
+                self.movimiento_derecha(True)
             self.nueva_casilla()
     
     
