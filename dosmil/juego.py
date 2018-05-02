@@ -5,6 +5,7 @@ Created on 1 may. 2018
 @author: miguelangel.garciar
 '''
 from random import randint, random
+#from texttable import Texttable
 import sys
 from __builtin__ import True
 
@@ -22,7 +23,10 @@ class Juego(int):
     TABLEROS = (3, 4, 5, 6, 7, 8)
     
     # Probabilidad de que aparezca un 4 en lugar de un 2.
-    PR_CUATRO = 0.09
+    PR_CUATRO = 0.1
+    
+    # Tamaño de una casilla
+    W_CELL = 10
     
     def __init__(self, longitud):
         '''
@@ -81,30 +85,115 @@ class Juego(int):
         # Valor a poner, un 2 o un 4.
         valor = -1
         if random() < self.PR_CUATRO:
-            valor = 4
-        else:
             valor = 2
+        else:
+            valor = 1
         self.tablero[x][y] = valor
         return True
         
         
     def imprimir(self):
-        print('-----------------------')
+        print('-------------------------------------------------------')
+        print(' * Puntuacion: {} \n'.format(self.puntuacion))
         i = 0
         while i < self.longitud:
             for el in self.tablero[i]:
                 if el == None:
-                    sys.stdout.write(' - ')
+                    el = '-'
                 else:
-                    #print(' {} '.format(el), end="\t")
-                    sys.stdout.write(' {} '.format(el))
-            print('')
+                    el = self.VALORES[int(el)]
+                sys.stdout.write('{}'.format(el).center(self.W_CELL))
+            print('\n')
             i += 1
-        print('-----------------------')
+        print('-------------------------------------------------------')
         return ''
-                
+    
+    def intercambiar(self, x1, y1, x2, y2):
+        '''
+        Intercambia la posicion de dos casillas
+        '''
+        aux = self.tablero[x1][y1]
+        self.tablero[x1][y1] = self.tablero[x2][y2]
+        self.tablero[x2][y2] = aux
+    
+    
+    def unir_dos_casillas(self, x1, y1, x2, y2):
+        '''
+        Une dos casillas. La casilla que se almacena es x1,y1. La otra se queda vacia
+        '''
+        valor1 = self.tablero[x1][y1]
+        valor2 = self.tablero[x2][y2]
+        if valor1 == valor2 and not valor1 is None:
+            self.tablero[x2][y2] = None
+            self.tablero[x1][y1] = valor1 + 1
+            return self.VALORES[valor1 + 1]
+        return 0
+    
+    
+    def llevar_casilla_izquierda(self, x, y):
+        '''
+        Mueve la casilla X,Y a la izquierda
+        '''
+        aux = y - 1                 # Empezamos a mirar la siguiente casilla
+        if aux >= 0:                # Siempre que no nos salgamos por la izquierda
+            if self.vacia(x, aux):
+                # Si esta vacia, la intercambiamos, y volveremos a comprobar si se puede
+                # llevar a la izquierda la que acabamos de intercambiar (la que tiene valor,
+                # la otra esta vacia). Llegara un punto en el que dejara de ir a la izquierda.
+                self.intercambiar(x, y, x, aux)
+                self.llevar_casilla_izquierda(x, aux)
+    
+    
+    def desplazamientos_izquierda(self):
+        '''
+        Lleva las casillas necesarias a la izquierda
+        '''
+        # Desplazamos a la izquierda todas las casillas (sin que se junten)
+        for x in range(0, self.longitud):               # Para cada fila:
+            for nueva in range(1, self.longitud):       # Para cada columna (desde la 1 hasta n-1)
+                # 1, porque la 0 no hace falta comprobarla.
+                self.llevar_casilla_izquierda(x, nueva) # Movemos todas las demas casillas
+    
+    
+    def movimiento_izquierda(self, sumar):
+        '''
+        Realiza el movimiento del tablero a la izquierda. Se indica si se deben sumar los puntos o no.
+        '''
+        self.desplazamientos_izquierda()
+        # Unimos las que esten juntas:
+        puntos = 0
+        for x in range(0, self.longitud):               # Para cada fila:
+            for nueva in range(0, self.longitud - 1):       # Para cada columna (desde la 0 hasta n-2)
+                puntos += self.unir_dos_casillas(x, nueva, x, nueva + 1) 
+        self.desplazamientos_izquierda()
+        if sumar:
+            self.puntuacion += puntos
+        return puntos
         
         
+    
+    '''
+    def imprimir2(self):
+        table = Texttable()
+        print('-------------------------------------------------------')
+        print(' * Puntuacion: {} \n'.format(self.puntuacion))
+        i = 0
+        fila =  []
+        while i < self.longitud:
+            for el in self.tablero[i]:
+                if el == None:
+                    el = '-'
+                else:
+                    print('el = {}'.format(el))
+                    el = self.VALORES[int(el)]
+                    print('ahora es {}'.format(el))
+                fila.append(el.center(self.W_CELL))
+            table.add_row(fila, header=False)
+            fila = []
+            i += 1
+        print table.draw()
+        print('-------------------------------------------------------')
+    '''   
         
         
         
