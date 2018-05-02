@@ -41,6 +41,7 @@ class Juego(int):
                 fila.append(None)
             columnas.append(fila)
         self.tablero = columnas
+        self.tablero_anterior = None
         self.puntuacion = 0
     
         
@@ -232,15 +233,11 @@ class Juego(int):
                 self.intercambiar(x, y, aux, y)
                 self.llevar_casilla_abajo(aux, y)
     
-    
     def desplazamientos_abajo(self):
         for y in range(0, self.longitud):    
             alreves = range(0, self.longitud - 1)
             for nueva in reversed(alreves):     
                 self.llevar_casilla_abajo(nueva, y)
-    
-    
-    
     def movimiento_abajo(self, sumar):
         self.desplazamientos_abajo()
         puntos = 0
@@ -310,12 +307,14 @@ class Juego(int):
         return diferentes
     
     
-    def juego_acabado(self):
+    def acabado(self):
         return self.movimiento_posible('w') or self.movimiento_posible('a') or self.movimiento_posible('s') or self.movimiento_posible('d')
     
     
     def mover(self, mov):
         if self.movimiento_posible(mov):
+            self.tablero_anterior = self.exportar_tablero()
+            self.puntuacion_anterior = self.puntuacion
             if mov == 'w':
                 self.movimiento_arriba(True)
             elif mov == 'a':
@@ -324,9 +323,18 @@ class Juego(int):
                 self.movimiento_abajo(True)
             elif mov == 'd':
                 self.movimiento_derecha(True)
-            self.nueva_casilla()
+            return self.nueva_casilla()
+        else:
+            return True
     
     
+    def deshacer(self):
+        if self.tablero_anterior == None:
+            return False
+        self.importar_tablero(self.tablero_anterior)
+        self.puntuacion = self.puntuacion_anterior
+        self.tablero_anterior = None
+        return True
     
     '''
     def imprimir2(self):

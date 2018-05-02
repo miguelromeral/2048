@@ -23,15 +23,15 @@ def uso_in_game():
         {}        Mover hacia la IZQUIERDA
         {}        Mover hacia ABAJO
         {}        Mover hacia la DERECHA
-        {}        DESHACER ultimo movimiento (no implementado aun)
+        {}        DESHACER ultimo movimiento
         {}        SALIR
     """.format('w', 'a', 's', 'd', 'u', 'q'))
 
     
 
-def bucle_principal_manual(juego):
-    #while not juego.juego_acabado():
-    while True:
+def bucle_principal_manual(game):
+    continua = True
+    while continua and game.acabado():
         game.imprimir()
         print('Escriba la siguiente orden (h para mostrar los posibles comandos)')
         try:
@@ -48,14 +48,21 @@ def bucle_principal_manual(juego):
             # ES UNA TRAMPA!
             elif ch == 'n': # Esto habria que eliminarlo
                 game.nueva_casilla()
+            elif ch == 'u': # Esto habria que eliminarlo
+                if game.deshacer():
+                    print('Tablero deshecho al ultimo movimiento.')
+                else:
+                    print('No existe un tablero anterior.')
             elif ch == 'w' or ch == 'a' or ch == 's' or ch == 'd':
-                game.mover(ch)
+                continua = game.mover(ch)
             else:
                 print('No he reconocido el comando.')
                 
         except ValueError:
             print('No he reconocido el comando.')
     
+    print('¡Ya no quedan mas movimientos! Fin de la partida')
+    game.imprimir()
     print('Has finalizado con {} puntos.'.format(game.puntuacion))
     sys.exit()
     
@@ -95,6 +102,7 @@ if __name__ == '__main__':
             if argu == COM_SIZE_1 or argu == COM_SIZE_2:
                 if int(el) in Juego.TABLEROS:
                     tamanyo = int(el)
+                    argu = None
                 else:
                     print('Ese tamaño de tablero no es valido:')
                     usage()
@@ -102,6 +110,7 @@ if __name__ == '__main__':
             elif argu == COM_MODO_1 or argu == COM_MODO_2:
                 if el in ('m','a'):
                     modo = el
+                    argu = None
                 else:
                     print('Ese modo de juego no es valido:')
                     usage()
