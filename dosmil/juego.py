@@ -218,16 +218,35 @@ class Juego(int):
         diferentes = False
         anterior = self.exportar_tablero()
         if mov == 'w':
-            pass
+            diferentes = True
         elif mov == 'a':
             self.movimiento_izquierda(False)
         elif mov == 's':
-            pass
+            diferentes = True
         elif mov == 'd':
-            pass
+            diferentes = True
         diferentes = self.tableros_diferentes(anterior)
         self.importar_tablero(anterior)
         return diferentes
+    
+    
+    def juego_acabado(self):
+        return self.movimiento_posible('w') or self.movimiento_posible('a') or self.movimiento_posible('s') or self.movimiento_posible('d')
+    
+    
+    def mover(self, mov):
+        if self.movimiento_posible(mov):
+            if mov == 'w':
+                pass
+            elif mov == 'a':
+                self.movimiento_izquierda(True)
+            elif mov == 's':
+                pass
+            elif mov == 'd':
+                pass
+            self.nueva_casilla()
+    
+    
     
     '''
     def imprimir2(self):

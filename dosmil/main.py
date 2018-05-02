@@ -16,6 +16,61 @@ COM_SIZE_2 = '--size'
 COM_MODO_1 = '-m'
 COM_MODO_2 = '--mode'
 
+def uso_in_game():
+    print("""
+    Uso:
+        {}        Mover hacia ARRIBA
+        {}        Mover hacia la IZQUIERDA
+        {}        Mover hacia ABAJO
+        {}        Mover hacia la DERECHA
+        {}        DESHACER ultimo movimiento (no implementado aun)
+        {}        SALIR
+    """.format('w', 'a', 's', 'd', 'u', 'q'))
+
+    
+
+def bucle_principal_manual(juego):
+    #while not juego.juego_acabado():
+    while True:
+        game.imprimir()
+        print('Escriba la siguiente orden (h para mostrar los posibles comandos)')
+        try:
+            while True:
+                userInput = raw_input('> ')
+                if len(userInput) == 1:
+                    break
+                print 'Escribe solo un caracter'
+            ch = userInput.lower()
+            if ch == 'h':
+                uso_in_game()
+            elif ch == 'q':
+                break
+            # ES UNA TRAMPA!
+            elif ch == 'n': # Esto habria que eliminarlo
+                game.nueva_casilla()
+            elif ch == 'w' or ch == 'a' or ch == 's' or ch == 'd':
+                game.mover(ch)
+            else:
+                print('No he reconocido el comando.')
+                
+        except ValueError:
+            print('No he reconocido el comando.')
+    
+    print('Has finalizado con {} puntos.'.format(game.puntuacion))
+    sys.exit()
+    
+    '''
+    # PRuebas
+    game.nueva_casilla()
+    game.nueva_casilla()
+    game.nueva_casilla()
+    game.imprimir()
+    game.movimiento_izquierda(True)
+    game.imprimir()
+    sys.exit()
+    
+    '''
+
 def usage():
     print("""
     Uso:
@@ -57,14 +112,15 @@ if __name__ == '__main__':
                 sys.exit()
     # Creamos el juego:
     game = Juego(tamanyo)
+    game.nueva_casilla()
+    game.nueva_casilla()
     if modo == 'm':
-        # PRuebas
-        game.nueva_casilla()
-        game.nueva_casilla()
-        game.nueva_casilla()
-        game.imprimir()
-        game.movimiento_izquierda(True)
-        game.imprimir()
-        sys.exit()
+        bucle_principal_manual(game)
     else:
         sys.exit()
+        
+        
+
+        
+        
+        
