@@ -7,6 +7,7 @@ Created on 1 may. 2018
 from random import randint, random
 #from texttable import Texttable
 import sys
+import copy
 from __builtin__ import True
 
 class Juego(int):
@@ -41,6 +42,7 @@ class Juego(int):
             columnas.append(fila)
         self.tablero = columnas
         self.puntuacion = 0
+    
         
         
     def valida(self, x, y):
@@ -159,6 +161,7 @@ class Juego(int):
         '''
         Realiza el movimiento del tablero a la izquierda. Se indica si se deben sumar los puntos o no.
         '''
+        self.anterior = list(self.tablero)
         self.desplazamientos_izquierda()
         # Unimos las que esten juntas:
         puntos = 0
@@ -170,7 +173,61 @@ class Juego(int):
             self.puntuacion += puntos
         return puntos
         
+    
+    def tableros_diferentes(self, nuevo):
+        '''
+        Indica si dos tableros son diferentes
+        '''
+        for x in range(0, self.longitud):
+            for y in range(0, self.longitud):
+                if self.tablero[x][y] != nuevo[x][y]:
+                    return True
+        return False
         
+        
+    def exportar_tablero(self):
+        '''
+        Devuelve una copia del tablero
+        '''
+        filas = []
+        for el in self.tablero:
+            columnas = []
+            for ot in el:
+                columnas.append(ot)
+            filas.append(columnas)
+        return filas
+    
+    
+    def importar_tablero(self, nuevo):
+        '''
+        Copia el nuevo tablero en el propio
+        '''
+        filas = []
+        for el in nuevo:
+            columnas = []
+            for ot in el:
+                columnas.append(ot)
+            filas.append(columnas)
+        self.tablero = filas
+
+        
+    def movimiento_posible(self, mov):
+        '''
+        Indica si hay un movimiento posible. mov es w,a,s,d (arriba, izquierda, abajo, derecha)
+        '''
+        diferentes = False
+        anterior = self.exportar_tablero()
+        if mov == 'w':
+            pass
+        elif mov == 'a':
+            self.movimiento_izquierda(False)
+        elif mov == 's':
+            pass
+        elif mov == 'd':
+            pass
+        diferentes = self.tableros_diferentes(anterior)
+        self.importar_tablero(anterior)
+        return diferentes
     
     '''
     def imprimir2(self):
