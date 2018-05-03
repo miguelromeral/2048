@@ -4,11 +4,12 @@ Created on 1 may. 2018
 
 @author: miguelangel.garciar
 '''
-from random import randint, random
+import random
 #from texttable import Texttable
 import sys
 import copy
 from __builtin__ import True
+from test.test_socket import try_address
 
 class Juego(int):
     '''
@@ -46,6 +47,7 @@ class Juego(int):
         self.tablero = columnas
         self.tablero_anterior = None
         self.puntuacion = 0
+        self.movimientos = 0
         #self.celdas = self.VALORES[num_cel]
         self.celdas = self.VALORES[0]
     
@@ -69,7 +71,7 @@ class Juego(int):
         '''
         Retorna un valor aleatorio entre 0 y Longitud - 1.
         '''
-        return randint(0, self.longitud - 1)
+        return random.randint(0, self.longitud - 1)
     
     
     def nueva_casilla(self): 
@@ -92,7 +94,7 @@ class Juego(int):
             return False
         # Valor a poner, un 2 o un 4.
         valor = -1
-        if random() < self.PR_CUATRO:
+        if random.random() < self.PR_CUATRO:
             valor = 2
         else:
             valor = 1
@@ -102,7 +104,7 @@ class Juego(int):
         
     def imprimir(self):
         print('-------------------------------------------------------')
-        print(' * Puntuacion: {} \n'.format(self.puntuacion))
+        print(' * Puntuacion: {} | Movimientos: {}\n'.format(self.puntuacion,self.movimientos))
         i = 0
         while i < self.longitud:
             for el in self.tablero[i]:
@@ -328,6 +330,7 @@ class Juego(int):
                 self.movimiento_abajo(True)
             elif mov == 'd':
                 self.movimiento_derecha(True)
+            self.movimientos += 1
             return self.nueva_casilla()
         else:
             return True
@@ -339,30 +342,165 @@ class Juego(int):
         self.importar_tablero(self.tablero_anterior)
         self.puntuacion = self.puntuacion_anterior
         self.tablero_anterior = None
+        self.movimientos -= 1
         return True
     
-    '''
-    def imprimir2(self):
-        table = Texttable()
-        print('-------------------------------------------------------')
-        print(' * Puntuacion: {} \n'.format(self.puntuacion))
-        i = 0
-        fila =  []
-        while i < self.longitud:
-            for el in self.tablero[i]:
-                if el == None:
-                    el = '-'
+    
+    def mejor_jugada(self, pasos):
+        if pasos == 0:
+            print('Paso 0:')
+            tablero_ahora = self.exportar_tablero()
+            pts_w = self.movimiento_arriba(False)
+            self.importar_tablero(tablero_ahora)
+            pts_a = self.movimiento_izquierda(False)
+            self.importar_tablero(tablero_ahora)
+            pts_s = self.movimiento_abajo(False)
+            self.importar_tablero(tablero_ahora)
+            pts_d = self.movimiento_derecha(False)
+            self.importar_tablero(tablero_ahora)
+            
+            lista = [pts_w, pts_a, pts_s, pts_d]
+            maximo = max(lista)
+            print('--> {} - Total: {}'.format(lista, pts_w + pts_a + pts_s + pts_d))
+            print('--> Maximo: {}'.format(maximo))
+            
+            if maximo == 0:
+                lista = ['w', 'a', 's', 'd']
+                #repetir = True
+                print('    Los seleccionados son: {}'.format(lista))
+                #while repetir:
+                ch = random.choice(lista)
+                print('    Intento {}'.format(ch))
+                lista.remove(ch)
+                #    if self.movimiento_posible(ch):
+                #        repetir = False
+                #    else:
+                #        print('        Intentamos de nuevo...')
+            else:
+                if maximo == pts_w:
+                    ch = 'w'
+                elif maximo == pts_a:
+                    ch = 'a'
+                elif maximo == pts_s:
+                    ch = 's'
+                elif maximo == pts_d:
+                    ch = 'd'
+            print('--> Elegido: {}'.format(ch))
+            return (ch, maximo, (pts_w + pts_a + pts_s + pts_d))
+        else:
+            pts_w, pts_a, pts_s, pts_d = 0,0,0,0
+            max_w, max_a, max_s, mas_d = 0,0,0,0
+            lista = []
+            lista_pos = []
+            ch = ''
+            print(' - ARRIBA ({})'.format(pasos))
+            tablero_ahora = self.exportar_tablero()
+            pts_w = self.movimiento_arriba(False)
+            self.nueva_casilla()
+            sig = self.mejor_jugada(pasos - 1)
+            pts_w += sig[1]
+            max_w = sig[2]
+            print(' -ARRIBA {}, Pts: {}, Max: {}'.format(pasos, pts_w, max_w))
+            self.importar_tablero(tablero_ahora)
+            
+            print(' - IZQUIERDA ({})'.format(pasos))
+            pts_a = self.movimiento_izquierda(False)
+            self.nueva_casilla()
+            sig = self.mejor_jugada(pasos - 1)
+            pts_a += sig[1]
+            max_a = sig[2]
+            print(' -IZQUIERDA {}, Pts: {}, Max: {}'.format(pasos, pts_a, max_a))
+            self.importar_tablero(tablero_ahora)
+            
+            print(' - ABAJO ({})'.format(pasos))
+            pts_s = self.movimiento_arriba(False)
+            self.nueva_casilla()
+            sig = self.mejor_jugada(pasos - 1)
+            pts_s += sig[1]
+            max_s = sig[2]
+            print(' -ABAJO {}, Pts: {}, Max: {}'.format(pasos, pts_s, max_s))
+            self.importar_tablero(tablero_ahora)
+            
+            print(' - DERECHA ({})'.format(pasos))
+            pts_d = self.movimiento_arriba(False)
+            self.nueva_casilla()
+            sig = self.mejor_jugada(pasos - 1)
+            pts_d += sig[1]
+            max_d = sig[2]
+            print(' -DERECHA {}, Pts: {}, Max: {}'.format(pasos, pts_d, max_d))
+            self.importar_tablero(tablero_ahora)
+            
+            lista = [pts_w, pts_a, pts_s, pts_d]
+            lista_pos = [max_w, max_a, max_s, max_d]
+            print(' * RESUMEN {}, Lista: {}, Posibles: {}'.format(pasos, lista, lista_pos))
+            maximo = max(lista)
+            maximo_pos = max(lista_pos)
+            repetido = lista.count(maximo)
+            print( '    Repetidos: {}'.format(repetido))
+            if repetido == 1:
+                if maximo == pts_w:
+                    ch = 'w'
+                elif maximo == pts_a:
+                    ch = 'a'
+                elif maximo == pts_s:
+                    ch = 's'
+                elif maximo == pts_d:
+                    ch = 'd'
+            else:
+                lista = []
+                lista_aux = []
+                if maximo_pos == max_w:
+                    lista.append('w')
                 else:
-                    print('el = {}'.format(el))
-                    el = self.celdas[int(el)]
-                    print('ahora es {}'.format(el))
-                fila.append(el.center(self.W_CELL))
-            table.add_row(fila, header=False)
-            fila = []
-            i += 1
-        print table.draw()
-        print('-------------------------------------------------------')
-    '''   
-        
-        
-        
+                    lista_aux.append('w')
+                    
+                if maximo_pos == max_a:
+                    lista.append('a')
+                else:
+                    lista_aux.append('a')
+                    
+                if maximo_pos == max_s:
+                    lista.append('s')
+                else:
+                    lista_aux.append('s')
+                    
+                if maximo_pos == max_d:
+                    lista.append('d')
+                else:
+                    lista_aux.append('d')
+
+                repetir = True
+                print('    Los seleccionados son: {}'.format(lista))
+                print('    Los seleccionados (aux) son: {}'.format(lista_aux))
+                while repetir:
+                    try:
+                        ch = random.choice(lista)
+                        lista.remove(ch)
+                        print('        Intento: {}, queda {}'.format(ch, lista))
+                        if self.movimiento_posible(ch):
+                            repetir = False
+                        else:
+                            print('        Intentamos de nuevo...')
+                    except IndexError:
+                        try:
+                            print('Se nos acabo')
+                            ch = random.choice(lista_aux)
+                            lista_aux.remove(ch)
+                            print('            Intento: {}, queda {}'.format(ch, lista_aux))
+                            if self.movimiento_posible(ch):
+                                repetir = False
+                            else:
+                                print('            Intentamos de nuevo...')
+                        except IndexError:
+                            print (' ------- Que ya no quedan mas muyayo...!')
+                            lista = ['w', 'a', 's', 'd']
+                            ch = random.choice(lista)
+                            print('    Intento {}'.format(ch))
+                            repetir = False
+            print('    Escogemos: {}'.format(ch))
+            return (ch, maximo, maximo_pos)
+    
+    
+    
+    
+    

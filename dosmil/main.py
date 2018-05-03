@@ -7,6 +7,7 @@ Created on 1 may. 2018
 import dosmil.juego
 import sys
 from dosmil.juego import Juego
+from time import sleep
 
 COM_HELP_1 = '-h'
 COM_HELP_2 = '--help'
@@ -35,6 +36,9 @@ def bucle_principal_manual(game):
     while continua and game.acabado():
         game.imprimir()
         print('Escriba la siguiente orden (h para mostrar los posibles comandos)')
+        
+        game.mejor_jugada(0)
+        
         try:
             while True:
                 userInput = raw_input('> ')
@@ -64,7 +68,7 @@ def bucle_principal_manual(game):
     
     print('¡Ya no quedan mas movimientos! Fin de la partida')
     game.imprimir()
-    print('Has finalizado con {} puntos.'.format(game.puntuacion))
+    print('Has finalizado con {} puntos tras {} movimientos.'.format(game.puntuacion, game.movimientos))
     sys.exit()
     
     '''
@@ -88,11 +92,29 @@ def usage():
         {} | {}        Tipo de casillas (0: normal, 1: fibonacci)
     """.format(COM_HELP_1, COM_HELP_2, COM_SIZE_1, COM_SIZE_2, COM_MODO_1, COM_MODO_2, COM_CELL_1, COM_CELL_2))
 
+
+
+def bucle_principal_ia(game):
+    #game.nueva_casilla()
+    #game.nueva_casilla()
+    while game.acabado():
+        #game.imprimir()
+        ch = game.mejor_jugada(3)[0]
+        game.mover(ch)
+        game.imprimir()
+        sleep(0.3)
+    
+    print('¡Ya no quedan mas movimientos! Fin de la partida')
+    game.imprimir()
+    print('El ordenador ha conseguido {} puntos en {} movimientos.'.format(game.puntuacion, game.movimientos))
+    sys.exit()
+
+
 if __name__ == '__main__':
     # Tratamos los argumentos:
     tamanyo = 4 # 4 de tamaño por defecto
     nc = 0
-    modo = 'm' # Modo manual por defecto
+    modo = 'a' # Modo manual por defecto
     argu = None
     del sys.argv[0] # Elimino la llamada al programa
     for el in sys.argv:
@@ -142,7 +164,7 @@ if __name__ == '__main__':
     if modo == 'm':
         bucle_principal_manual(game)
     else:
-        sys.exit()
+        bucle_principal_ia(game)
         
         
 
