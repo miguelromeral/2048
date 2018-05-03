@@ -16,9 +16,12 @@ class Juego(int):
     '''
     
     # Posibles valores de las casillas.
-    VALORES = (None, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
+    VALORES_2 = (None, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
                32768, 65536, 131072, 262144, 524288, 1048576)
+    VALORES_FIBONACCI = (None, 0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377,
+               610, 987, 1597, 2584, 4181, 6765)
     
+    VALORES=(VALORES_2, VALORES_FIBONACCI)
     
     # Posibles tama�os de tablero.
     TABLEROS = (3, 4, 5, 6, 7, 8)
@@ -43,6 +46,8 @@ class Juego(int):
         self.tablero = columnas
         self.tablero_anterior = None
         self.puntuacion = 0
+        #self.celdas = self.VALORES[num_cel]
+        self.celdas = self.VALORES[0]
     
         
         
@@ -104,7 +109,7 @@ class Juego(int):
                 if el == None:
                     el = '-'
                 else:
-                    el = self.VALORES[int(el)]
+                    el = self.celdas[int(el)]
                 sys.stdout.write('{}'.format(el).center(self.W_CELL))
             print('\n')
             i += 1
@@ -129,7 +134,7 @@ class Juego(int):
         if valor1 == valor2 and not valor1 is None:
             self.tablero[x2][y2] = None
             self.tablero[x1][y1] = valor1 + 1
-            return self.VALORES[valor1 + 1]
+            return self.celdas[valor1 + 1]
         return 0
     
     def llevar_casilla_derecha(self, x, y):
@@ -349,7 +354,7 @@ class Juego(int):
                     el = '-'
                 else:
                     print('el = {}'.format(el))
-                    el = self.VALORES[int(el)]
+                    el = self.celdas[int(el)]
                     print('ahora es {}'.format(el))
                 fila.append(el.center(self.W_CELL))
             table.add_row(fila, header=False)

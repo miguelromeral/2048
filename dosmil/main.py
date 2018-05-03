@@ -7,7 +7,6 @@ Created on 1 may. 2018
 import dosmil.juego
 import sys
 from dosmil.juego import Juego
-from telnetlib import EL
 
 COM_HELP_1 = '-h'
 COM_HELP_2 = '--help'
@@ -15,6 +14,8 @@ COM_SIZE_1 = '-s'
 COM_SIZE_2 = '--size'
 COM_MODO_1 = '-m'
 COM_MODO_2 = '--mode'
+COM_CELL_1 = '-c'
+COM_CELL_2 = '--cell'
 
 def uso_in_game():
     print("""
@@ -84,17 +85,19 @@ def usage():
         {} | {}        Muestra las opciones en la llamada.
         {} | {}        Especifica el tama�o del tablero (entre 3 y 8). Por defecto: 4
         {} | {}        Modo de juego (m: manual, a: automatico)
-    """.format(COM_HELP_1, COM_HELP_2, COM_SIZE_1, COM_SIZE_2, COM_MODO_1, COM_MODO_2))
+        {} | {}        Tipo de casillas (0: normal, 1: fibonacci)
+    """.format(COM_HELP_1, COM_HELP_2, COM_SIZE_1, COM_SIZE_2, COM_MODO_1, COM_MODO_2, COM_CELL_1, COM_CELL_2))
 
 if __name__ == '__main__':
     # Tratamos los argumentos:
     tamanyo = 4 # 4 de tamaño por defecto
+    nc = 0
     modo = 'm' # Modo manual por defecto
     argu = None
     del sys.argv[0] # Elimino la llamada al programa
     for el in sys.argv:
         if argu == None:
-            if el == COM_SIZE_1 or el == COM_SIZE_2 or el == COM_MODO_1 or el == COM_MODO_2:
+            if el == COM_SIZE_1 or el == COM_SIZE_2 or el == COM_MODO_1 or el == COM_MODO_2 or el == COM_CELL_1 or el == COM_CELL_2:
                 argu = el
             else:
                 argu = 'desconocido'
@@ -113,6 +116,19 @@ if __name__ == '__main__':
                     argu = None
                 else:
                     print('Ese modo de juego no es valido:')
+                    usage()
+                    sys.exit()
+            elif argu == COM_CELL_1 or argu == COM_CELL_2:
+                try:
+                    if int(el) >= 0 and int(el) < len(Juego.VALORES):
+                        nc = int(el)
+                        argu = None
+                    else:
+                        print('Ese tipo de celdas no es valido:')
+                        usage()
+                        sys.exit()
+                except ValueError:
+                    print('Ese tipo de celdas no es valido:')
                     usage()
                     sys.exit()
             else:
