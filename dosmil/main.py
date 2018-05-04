@@ -4,9 +4,8 @@ Created on 1 may. 2018
 
 @author: miguelangel.garciar
 '''
-import dosmil.juego
 import sys
-from dosmil.juego import Juego
+import dosmil.juego as g
 from time import sleep
 
 COM_HELP_1 = '-h'
@@ -27,7 +26,7 @@ def uso_in_game():
         {}        Mover hacia la DERECHA
         {}        DESHACER ultimo movimiento
         {}        SALIR
-    """.format('w', 'a', 's', 'd', 'u', 'q'))
+    """.format(g.K_UP, g.K_LEFT, g.K_DOWN, g.K_RIGHT, g.K_UNDO, g.K_QUIT))
 
     
 
@@ -48,17 +47,14 @@ def bucle_principal_manual(game):
             ch = userInput.lower()
             if ch == 'h':
                 uso_in_game()
-            elif ch == 'q':
+            elif ch == g.K_QUIT:
                 break
-            # ES UNA TRAMPA!
-            elif ch == 'n': # Esto habria que eliminarlo
-                game.nueva_casilla()
-            elif ch == 'u': # Esto habria que eliminarlo
+            elif ch == g.K_UNDO: # Esto habria que eliminarlo
                 if game.deshacer():
                     print('Tablero deshecho al ultimo movimiento.')
                 else:
                     print('No existe un tablero anterior.')
-            elif ch == 'w' or ch == 'a' or ch == 's' or ch == 'd':
+            elif ch == g.K_UP or ch == g.K_LEFT or ch == g.K_DOWN or ch == g.K_RIGHT:
                 continua = game.mover(ch)
             else:
                 print('No he reconocido el comando.')
@@ -66,7 +62,8 @@ def bucle_principal_manual(game):
         except ValueError:
             print('No he reconocido el comando.')
     
-    print('¡Ya no quedan mas movimientos! Fin de la partida')
+    if game.acabado():
+        print('¡Ya no quedan mas movimientos! Fin de la partida')
     game.imprimir()
     print('Has finalizado con {} puntos tras {} movimientos.'.format(game.puntuacion, game.movimientos))
     sys.exit()
@@ -89,7 +86,11 @@ def usage():
         {} | {}        Muestra las opciones en la llamada.
         {} | {}        Especifica el tama�o del tablero (entre 3 y 8). Por defecto: 4
         {} | {}        Modo de juego (m: manual, a: automatico)
-        {} | {}        Tipo de casillas (0: normal, 1: fibonacci)
+        {} | {}        Tipo de casillas:
+                            0: IMPOSIBLE!
+                            1: normal, en base 2
+                            2: en base 3
+                            3: fibonacci
     """.format(COM_HELP_1, COM_HELP_2, COM_SIZE_1, COM_SIZE_2, COM_MODO_1, COM_MODO_2, COM_CELL_1, COM_CELL_2))
 
 
@@ -99,10 +100,10 @@ def bucle_principal_ia(game):
     #game.nueva_casilla()
     while game.acabado():
         #game.imprimir()
-        ch = game.mejor_jugada(3)[0]
+        ch = game.mejor_jugada(5)[0]
         game.mover(ch)
         game.imprimir()
-        sleep(0.3)
+        sleep(0.5)
     
     print('¡Ya no quedan mas movimientos! Fin de la partida')
     game.imprimir()
@@ -113,7 +114,7 @@ def bucle_principal_ia(game):
 if __name__ == '__main__':
     # Tratamos los argumentos:
     tamanyo = 4 # 4 de tamaño por defecto
-    nc = 0
+    nc = 1
     modo = 'a' # Modo manual por defecto
     argu = None
     del sys.argv[0] # Elimino la llamada al programa
@@ -125,7 +126,7 @@ if __name__ == '__main__':
                 argu = 'desconocido'
         else:
             if argu == COM_SIZE_1 or argu == COM_SIZE_2:
-                if int(el) in Juego.TABLEROS:
+                if int(el) in g.Juego.TABLEROS:
                     tamanyo = int(el)
                     argu = None
                 else:
@@ -142,7 +143,7 @@ if __name__ == '__main__':
                     sys.exit()
             elif argu == COM_CELL_1 or argu == COM_CELL_2:
                 try:
-                    if int(el) >= 0 and int(el) < len(Juego.VALORES):
+                    if int(el) >= 0 and int(el) < len(g.Juego.VALORES):
                         nc = int(el)
                         argu = None
                     else:
@@ -158,7 +159,7 @@ if __name__ == '__main__':
                 usage()
                 sys.exit()
     # Creamos el juego:
-    game = Juego(tamanyo)
+    game = g.Juego(tamanyo)
     game.nueva_casilla()
     game.nueva_casilla()
     if modo == 'm':
