@@ -12,33 +12,33 @@ Este juego tiene diferentes modos, en los que se encuentran diferentes tamaños 
 
 ## Instalación
 
-Para poder usarlo, debemos tener un equipo con Python instalado. Una vez que lo tengamos, descargamos los ficheros de la carpeta "dosmil" y ejecutamos el fichero main.py:
+Para poder usarlo, debemos tener un equipo con Python instalado. Una vez que lo tengamos, descargamos los ficheros de la carpeta "dosmil" y ejecutamos el fichero 2048.py:
 
 ```
-python main.py
+python 2048.py
 ```
 
 Existen modificadores para cambiar el tipo de juego (también se pueden ver poniendo -h o --help en la llamada al programa):
 
 ```
-python main.py -s 5
+python 2048.py -s 5
 # -s (o --size) Cambia el tamaño del tablero (de 3 a 8)
 ```
 
 ```
-python main.py -m a
+python 2048.py -m a
 # -m (o --mode) indica el modo de juego (m: manual, a: automático)
 ```
 
 **⚠️ NO DISPONIBLE en este momento.**
 ```
-python main.py -c 3
+python 2048.py -c 3
 # -c (o --cell) Cambia el tipo de celdas. (0: IMPOSIBLE, 1: juego normal, 2: exponentes de 3, 3: suma de elementos, 4: Fibonacci)
 ```
 
 Se pueden unir cualquier modificador para cargar cualquier tipo de juego:
 ```
-python main.py -s 7 -c 2 -m a
+python 2048.py -s 7 -c 2 -m a
 ```
 
 ### Uso manual
