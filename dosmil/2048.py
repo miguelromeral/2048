@@ -1,12 +1,17 @@
-# -*- coding: utf-8 -*-    
+# -*- coding: utf-8 -*-   
 '''
 Created on 1 may. 2018
 
 @author: miguelangel.garciar
 '''
+import sys
+import datetime
+from time import sleep
 import random
 import sys
 from __builtin__ import True
+
+
 
 K_UP = 'w'
 K_LEFT = 'a'
@@ -15,31 +20,35 @@ K_RIGHT = 'd'
 K_UNDO = 'u'
 K_QUIT = 'q'
 
+TIEMPO_IA=0.3
+PASOS=5
+
+# Posibles tama�os de tablero.
+TABLEROS = (3, 4, 5, 6, 7, 8)
+
+# Probabilidad de que aparezca un 4 en lugar de un 2.
+PR_CUATRO = 0.05
+
+# Posibles valores de las casillas.
+VALORES_1 = (None, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+VALORES_2 = (None, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
+           32768, 65536, 131072, 262144, 524288, 1048576)
+VALORES_3 = (None, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441, 1594323, 4782969,
+           14348907, 43046721, 129140163, 387420489, 1162261467, 3486784401)
+VALORES_SUMA = (None, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+
+VALORES_FIBONACCI = (None, 0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377,
+           610, 987, 1597, 2584, 4181, 6765)
+
+VALORES=(VALORES_1, VALORES_2, VALORES_3, VALORES_SUMA, VALORES_FIBONACCI)
+
+# Tamaño de una casilla
+W_CELL = 10
+
 class Juego(int):
     '''
     Clase en la que se encuentra el tablero.
     '''
-    
-    # Posibles valores de las casillas.
-    VALORES_1 = (None, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-    VALORES_2 = (None, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
-               32768, 65536, 131072, 262144, 524288, 1048576)
-    VALORES_3 = (None, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441, 1594323, 4782969,
-               14348907, 43046721, 129140163, 387420489, 1162261467, 3486784401)
-    
-    VALORES_FIBONACCI = (None, 0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377,
-               610, 987, 1597, 2584, 4181, 6765)
-    
-    VALORES=(VALORES_1, VALORES_2, VALORES_3, VALORES_FIBONACCI)
-    
-    # Posibles tama�os de tablero.
-    TABLEROS = (3, 4, 5, 6, 7, 8)
-    
-    # Probabilidad de que aparezca un 4 en lugar de un 2.
-    PR_CUATRO = 0.05
-    
-    # Tamaño de una casilla
-    W_CELL = 10
     
     def __init__(self, longitud):
         '''
@@ -56,9 +65,9 @@ class Juego(int):
         self.tablero_anterior = None
         self.puntuacion = 0
         self.movimientos = 0
-        #self.celdas = self.VALORES[num_cel]
-        self.celdas = self.VALORES[1]
-    
+        #self.celdas = VALORES[num_cel]
+        self.celdas = VALORES[1]
+
         
         
     def valida(self, x, y):
@@ -102,7 +111,7 @@ class Juego(int):
             return False
         # Valor a poner, un 2 o un 4.
         valor = -1
-        if random.random() < self.PR_CUATRO:
+        if random.random() < PR_CUATRO:
             valor = 2
         else:
             valor = 1
@@ -120,7 +129,7 @@ class Juego(int):
                     el = '-'
                 else:
                     el = self.celdas[int(el)]
-                sys.stdout.write('{}'.format(el).center(self.W_CELL))
+                sys.stdout.write('{}'.format(el).center(W_CELL))
             print('\n')
             i += 1
         print('---------------------------------------------------------------------')
@@ -174,6 +183,14 @@ class Juego(int):
             self.puntuacion += puntos
         return puntos
     
+    
+    def maximo_tablero(self):
+        maximo = 0
+        for i in range(0, self.longitud):
+            for j in range(0, self.longitud):
+                if self.tablero[i][j] > maximo:
+                    maximo = self.tablero[i][j]
+        return maximo
     
     def llevar_casilla_izquierda(self, x, y):
         '''
@@ -356,7 +373,7 @@ class Juego(int):
     
     def mejor_jugada(self, pasos):
         if pasos == 0:
-            print('Paso 0:')
+            #print('Paso 0:')
             pts_w, pts_a, pts_s, pts_d = 0,0,0,0
             tablero_ahora = self.exportar_tablero()
             pts_w = self.movimiento_arriba(False)
@@ -370,11 +387,11 @@ class Juego(int):
             
             lista = [pts_w, pts_a, pts_s, pts_d]
             maximo = max(lista)
-            print('--> {} - Total: {}'.format(lista, pts_w + pts_a + pts_s + pts_d))
-            print('--> Maximo: {}'.format(maximo))
+            #print('--> {} - Total: {}'.format(lista, pts_w + pts_a + pts_s + pts_d))
+            #print('--> Maximo: {}'.format(maximo))
             
             repetido = lista.count(maximo)
-            print( '    Repetidos: {}'.format(repetido))
+            #print( '    Repetidos: {}'.format(repetido))
             if repetido == 1:
                 if maximo == pts_w:
                     ch = K_UP
@@ -408,33 +425,32 @@ class Juego(int):
                     lista_aux.append(K_RIGHT)
 
                 repetir = True
-                print('    Los seleccionados son: {}'.format(lista))
-                print('    Los seleccionados (aux) son: {}'.format(lista_aux))
+                #print('    Los seleccionados son: {}'.format(lista))
+                #print('    Los seleccionados (aux) son: {}'.format(lista_aux))
                 while repetir:
                     try:
                         ch = random.choice(lista)
                         lista.remove(ch)
-                        print('        Intento: {}, queda {}'.format(ch, lista))
+                        #print('        Intento: {}, queda {}'.format(ch, lista))
                         if self.movimiento_posible(ch):
                             repetir = False
-                        else:
-                            print('        Intentamos de nuevo...')
+                        #else:
+                        #    print('        Intentamos de nuevo...')
                     except IndexError:
                         try:
-                            print('Se nos acabo')
+                            #print('Se nos acabo')
                             ch = random.choice(lista_aux)
                             lista_aux.remove(ch)
-                            print('            Intento: {}, queda {}'.format(ch, lista_aux))
+                            #print('            Intento: {}, queda {}'.format(ch, lista_aux))
                             if self.movimiento_posible(ch):
                                 repetir = False
-                            else:
-                                print('            Intentamos de nuevo...')
+                            #else:
+                            #    print('            Intentamos de nuevo...')
                         except IndexError:
-                            print (' ------- Que ya no quedan mas muyayo...!')
-                            #lista = [K_UP, K_LEFT, K_DOWN, K_RIGHT]
+                            #print (' ------- Que ya no quedan mas muyayo...!')
                             lista = [K_UP, K_LEFT]
                             ch = random.choice(lista)
-                            print('    Intento {}'.format(ch))
+                            #print('    Intento {}'.format(ch))
                             repetir = False
  
             
@@ -460,8 +476,8 @@ class Juego(int):
                 elif maximo == pts_d:
                     ch = K_RIGHT
             '''
-            print('--> Elegido: {}'.format(ch))
-            print('--> Retorno: ({},{},{})'.format(ch, maximo, (pts_w + pts_a + pts_s + pts_d)))
+            #print('--> Elegido: {}'.format(ch))
+            #print('--> Retorno: ({},{},{})'.format(ch, maximo, (pts_w + pts_a + pts_s + pts_d)))
             return (ch, maximo, (pts_w + pts_a + pts_s + pts_d))
         else:
             pts_w, pts_a, pts_s, pts_d = 0,0,0,0
@@ -471,52 +487,52 @@ class Juego(int):
             ch = ''
             tablero_ahora = self.exportar_tablero()
             if self.movimiento_posible(K_UP):
-                print(' - ARRIBA ({})'.format(pasos))
+                #print(' - ARRIBA ({})'.format(pasos))
                 pts_w = self.movimiento_arriba(False)
                 self.nueva_casilla()
                 sig = self.mejor_jugada(pasos - 1)
                 pts_w += sig[1]
                 max_w = sig[2]
-                print(' -ARRIBA {}, Pts: {}, Max: {}'.format(pasos, pts_w, max_w))
+                #print(' -ARRIBA {}, Pts: {}, Max: {}'.format(pasos, pts_w, max_w))
                 self.importar_tablero(tablero_ahora)
             
             if self.movimiento_posible(K_LEFT):
-                print(' - IZQUIERDA ({})'.format(pasos))
+                #print(' - IZQUIERDA ({})'.format(pasos))
                 pts_a = self.movimiento_izquierda(False)
                 self.nueva_casilla()
                 sig = self.mejor_jugada(pasos - 1)
                 pts_a += sig[1]
                 max_a = sig[2]
-                print(' -IZQUIERDA {}, Pts: {}, Max: {}'.format(pasos, pts_a, max_a))
+                #print(' -IZQUIERDA {}, Pts: {}, Max: {}'.format(pasos, pts_a, max_a))
                 self.importar_tablero(tablero_ahora)
             
             if self.movimiento_posible(K_DOWN):
-                print(' - ABAJO ({})'.format(pasos))
+                #print(' - ABAJO ({})'.format(pasos))
                 pts_s = self.movimiento_arriba(False)
                 self.nueva_casilla()
                 sig = self.mejor_jugada(pasos - 1)
                 pts_s += sig[1]
                 max_s = sig[2]
-                print(' -ABAJO {}, Pts: {}, Max: {}'.format(pasos, pts_s, max_s))
+                #print(' -ABAJO {}, Pts: {}, Max: {}'.format(pasos, pts_s, max_s))
                 self.importar_tablero(tablero_ahora)
             
             if self.movimiento_posible(K_RIGHT):
-                print(' - DERECHA ({})'.format(pasos))
+                #print(' - DERECHA ({})'.format(pasos))
                 pts_d = self.movimiento_arriba(False)
                 self.nueva_casilla()
                 sig = self.mejor_jugada(pasos - 1)
                 pts_d += sig[1]
                 max_d = sig[2]
-                print(' -DERECHA {}, Pts: {}, Max: {}'.format(pasos, pts_d, max_d))
+                #print(' -DERECHA {}, Pts: {}, Max: {}'.format(pasos, pts_d, max_d))
                 self.importar_tablero(tablero_ahora)
             
             lista = [pts_w, pts_a, pts_s, pts_d]
             lista_pos = [max_w, max_a, max_s, max_d]
-            print(' * RESUMEN {}, Lista: {}, Posibles: {}'.format(pasos, lista, lista_pos))
+            #print(' * RESUMEN {}, Lista: {}, Posibles: {}'.format(pasos, lista, lista_pos))
             maximo = max(lista)
             maximo_pos = max(lista_pos)
             repetido = lista.count(maximo)
-            print( '    Repetidos: {}'.format(repetido))
+            #print( '    Repetidos: {}'.format(repetido))
             if repetido == 1:
                 if maximo == pts_w:
                     ch = K_UP
@@ -550,37 +566,184 @@ class Juego(int):
                     lista_aux.append(K_RIGHT)
 
                 repetir = True
-                print('    Los seleccionados son: {}'.format(lista))
-                print('    Los seleccionados (aux) son: {}'.format(lista_aux))
+                #print('    Los seleccionados son: {}'.format(lista))
+                #print('    Los seleccionados (aux) son: {}'.format(lista_aux))
                 while repetir:
                     try:
                         ch = random.choice(lista)
                         lista.remove(ch)
-                        print('        Intento: {}, queda {}'.format(ch, lista))
+                        #print('        Intento: {}, queda {}'.format(ch, lista))
                         if self.movimiento_posible(ch):
                             repetir = False
-                        else:
-                            print('        Intentamos de nuevo...')
+                        #else:
+                        #    print('        Intentamos de nuevo...')
                     except IndexError:
                         try:
-                            print('Se nos acabo')
+                            #print('Se nos acabo')
                             ch = random.choice(lista_aux)
                             lista_aux.remove(ch)
-                            print('            Intento: {}, queda {}'.format(ch, lista_aux))
+                            #print('            Intento: {}, queda {}'.format(ch, lista_aux))
                             if self.movimiento_posible(ch):
                                 repetir = False
-                            else:
-                                print('            Intentamos de nuevo...')
+                            #velse:
+                            #    print('            Intentamos de nuevo...')
                         except IndexError:
-                            print (' ------- Que ya no quedan mas muyayo...!')
-                            #lista = [K_UP, K_LEFT, K_DOWN, K_RIGHT]
+                            #print (' ------- Que ya no quedan mas muyayo...!')
                             lista = [K_UP, K_LEFT]
                             ch = random.choice(lista)
-                            print('    Intento {}'.format(ch))
+                            #print('    Intento {}'.format(ch))
                             repetir = False
-            print('    Escogemos: {}'.format(ch))
+            #print('    Escogemos: {}'.format(ch))
             return (ch, maximo, maximo_pos)
     
+COM_HELP_1 = '-h'
+COM_HELP_2 = '--help'
+COM_SIZE_1 = '-s'
+COM_SIZE_2 = '--size'
+COM_MODO_1 = '-m'
+COM_MODO_2 = '--mode'
+COM_CELL_1 = '-c'
+COM_CELL_2 = '--cell'
+
+def uso_in_game():
+    print("""
+    Uso:
+        {}        Mover hacia ARRIBA
+        {}        Mover hacia la IZQUIERDA
+        {}        Mover hacia ABAJO
+        {}        Mover hacia la DERECHA
+        {}        DESHACER ultimo movimiento
+        {}        SALIR
+    """.format(K_UP, K_LEFT, K_DOWN, K_RIGHT, K_UNDO, K_QUIT))
+
+    
+
+def bucle_principal_manual(game):
+    continua = True
+    while continua and game.acabado():
+        game.imprimir()
+        print('Escriba la siguiente orden (h para mostrar los posibles comandos)')
+        try:
+            while True:
+                userInput = raw_input('> ')
+                if len(userInput) == 1:
+                    break
+                print 'Escribe solo un caracter'
+            ch = userInput.lower()
+            if ch == 'h':
+                uso_in_game()
+            elif ch == K_QUIT:
+                break
+            elif ch == K_UNDO: # Esto habria que eliminarlo
+                if game.deshacer():
+                    print('Tablero deshecho al ultimo movimiento.')
+                else:
+                    print('No existe un tablero anterior.')
+            elif ch == K_UP or ch == K_LEFT or ch == K_DOWN or ch == K_RIGHT:
+                continua = game.mover(ch)
+            else:
+                print('No he reconocido el comando.')
+                
+        except ValueError:
+            print('No he reconocido el comando.')
+    
+    if not game.acabado():
+        print('¡Ya no quedan mas movimientos! Fin de la partida')
+    game.imprimir()
+    print('Has finalizado con {} puntos tras {} movimientos.'.format(game.puntuacion, game.movimientos))
+    sys.exit()
+
+def usage():
+    print("""
+    Uso:
+        {} | {}        Muestra las opciones en la llamada.
+        {} | {}        Especifica el tama�o del tablero (entre 3 y 8). Por defecto: 4
+        {} | {}        Modo de juego (m: manual, a: automatico)
+        {} | {}        Tipo de casillas:
+                            0: IMPOSIBLE!
+                            1: normal, en base 2
+                            2: en base 3
+                            3: suma, 1 a 1.
+                            4: fibonacci
+    """.format(COM_HELP_1, COM_HELP_2, COM_SIZE_1, COM_SIZE_2, COM_MODO_1, COM_MODO_2, COM_CELL_1, COM_CELL_2))
+
+
+
+def bucle_principal_ia(game):
+    while game.acabado():
+        start = datetime.datetime.now()
+        ch = game.mejor_jugada(PASOS)[0]
+        game.mover(ch)
+        game.imprimir()
+        end = datetime.datetime.now()
+        diff = end - start
+        elapsed_ms = (diff.days * 86400000) + (diff.seconds * 1000) + (diff.microseconds / 1000)
+        print(' * He tardado {} milisegundos en pensar la jugada.'.format(elapsed_ms))
+        sleep(TIEMPO_IA)
+        
+        
+    print('¡Ya no quedan mas movimientos! Fin de la partida')
+    game.imprimir()
+    print('El ordenador ha conseguido {} puntos en {} movimientos.'.format(game.puntuacion, game.movimientos))
+    sys.exit()
+
+
+if __name__ == '__main__':
+    # Tratamos los argumentos:
+    tamanyo = 4 # 4 de tamaño por defecto
+    nc = 1
+    modo = 'm' # Modo manual por defecto
+    argu = None
+    del sys.argv[0] # Elimino la llamada al programa
+    for el in sys.argv:
+        if argu == None:
+            if el == COM_SIZE_1 or el == COM_SIZE_2 or el == COM_MODO_1 or el == COM_MODO_2 or el == COM_CELL_1 or el == COM_CELL_2:
+                argu = el
+            else:
+                argu = 'desconocido'
+        else:
+            if argu == COM_SIZE_1 or argu == COM_SIZE_2:
+                if int(el) in TABLEROS:
+                    tamanyo = int(el)
+                    argu = None
+                else:
+                    print('Ese tamaño de tablero no es valido:')
+                    usage()
+                    sys.exit()
+            elif argu == COM_MODO_1 or argu == COM_MODO_2:
+                if el in ('m','a'):
+                    modo = el
+                    argu = None
+                else:
+                    print('Ese modo de juego no es valido:')
+                    usage()
+                    sys.exit()
+            elif argu == COM_CELL_1 or argu == COM_CELL_2:
+                try:
+                    if int(el) >= 0 and int(el) < len(Juego.VALORES):
+                        nc = int(el)
+                        argu = None
+                    else:
+                        print('Ese tipo de celdas no es valido:')
+                        usage()
+                        sys.exit()
+                except ValueError:
+                    print('Ese tipo de celdas no es valido:')
+                    usage()
+                    sys.exit()
+            else:
+                print('Opcion no reconocida.')
+                usage()
+                sys.exit()
+    # Creamos el juego:
+    game = Juego(tamanyo)
+    game.nueva_casilla()
+    game.nueva_casilla()
+    if modo == 'm':
+        bucle_principal_manual(game)
+    else:
+        bucle_principal_ia(game)
+
     
     
     
